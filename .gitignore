@@ -1,0 +1,5 @@
+# Ignore Python temporary files
+*.pyc
+__pycache__
+
+build/

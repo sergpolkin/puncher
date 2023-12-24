@@ -1,0 +1,22 @@
+diff --git a/litex/soc/cores/clock/gowin_gw1n.py b/litex/soc/cores/clock/gowin_gw1n.py
+index 2907b5d1..0b42ac08 100644
+--- a/litex/soc/cores/clock/gowin_gw1n.py
++++ b/litex/soc/cores/clock/gowin_gw1n.py
+@@ -79,6 +79,8 @@ class GW1NPLL(LiteXModule):
+             vco_freq_range = (400e6, 1200e6)
+         elif device.startswith('GW1N-') or device.startswith('GW1NR-'):
+             vco_freq_range = (400e6, 900e6)
++        elif device.startswith('GW1NZ-'):
++            vco_freq_range = (400e6, 900e6)
+         if vco_freq_range is None:
+             raise ValueError(f"Unsupported device {device}.")
+         return vco_freq_range
+@@ -95,6 +97,8 @@ class GW1NPLL(LiteXModule):
+             pfd_freq_range = (3e6, 400e6)  # not verified: not found in the datasheet
+         elif device.startswith('GW1N-') or device.startswith('GW1NR-'):
+             pfd_freq_range = (3e6, 400e6)  # not verified: not found in the datasheet
++        elif device.startswith('GW1NZ-'):
++            pfd_freq_range = (3e6, 400e6)  # not verified: not found in the datasheet
+         if pfd_freq_range is None:
+             raise ValueError(f"Unsupported device {device}.")
+         return pfd_freq_range
