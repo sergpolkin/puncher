@@ -37,6 +37,8 @@ class SoC(SoCMini):
 
         self.submodules.crg = _CRG(platform, sys_clk_freq)
 
+        kwargs["cpu_type"] = "None"
+        kwargs["integrated_sram_size"] = 0
         kwargs["with_uart"] = False
         kwargs["with_timer"] = False
         SoCMini.__init__(self, platform, sys_clk_freq, **kwargs)
@@ -61,11 +63,21 @@ class SoC(SoCMini):
 
 
 def main():
-    soc = SoC()
-    builder = Builder(soc)
-    builder.build()
+    from litex.build.parser import LiteXArgumentParser
+    parser = LiteXArgumentParser(platform=sipeed_tang_nano_1k.Platform, description="LiteX SoC on Tang Nano 1k.")
+    parser.add_target_argument("--flash", action="store_true", help="Flash Bitstream.")
+    args = parser.parse_args()
 
-    if True:
+    soc = SoC(
+        **parser.soc_argdict
+    )
+
+    builder = Builder(soc, **parser.builder_argdict)
+
+    builder.compile_gateware = True if args.build else False
+    builder.build(**parser.toolchain_argdict)
+
+    if args.flash:
         prog = soc.platform.create_programmer()
         prog.load_bitstream(builder.get_bitstream_filename(mode="sram"))
 

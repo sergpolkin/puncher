@@ -58,9 +58,6 @@ class Platform(GowinPlatform):
 
     def __init__(self, toolchain="gowin"):
         GowinPlatform.__init__(self, "GW1NZ-LV1QN48C6/I5", _io, _connectors, toolchain=toolchain, devicename="GW1NZ-1")
-        self.toolchain.options["use_done_as_gpio"]      = 1
-        self.toolchain.options["use_reconfign_as_gpio"] = 1
-
         self.add_extension(_cap)
 
     def create_programmer(self):
