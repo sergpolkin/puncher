@@ -32,7 +32,7 @@ class _CRG(LiteXModule):
 # SoC ----------------------------------------------------------------------------------------------
 
 class SoC(SoCMini):
-    def __init__(self, sys_clk_freq=27e6, **kwargs):
+    def __init__(self, sys_clk_freq=66e6, **kwargs):
         platform = sipeed_tang_nano_1k.Platform()
 
         self.submodules.crg = _CRG(platform, sys_clk_freq)
@@ -54,7 +54,7 @@ class SoC(SoCMini):
         # Punch
         cap_reset = platform.request("cap_reset")
         cap_pads = platform.request("cap")
-        self.submodules.punch = Punch(cap_reset, cap_pads)
+        self.submodules.punch = Punch(cap_reset, cap_pads, sys_clk_freq)
         self.comb += self.uart.source.connect(self.punch.sink)
         self.comb += [
             self.uart.source.connect(self.punch.sink),
