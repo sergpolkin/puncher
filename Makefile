@@ -4,6 +4,7 @@ firmware = $(patsubst %.v,%.fs,$(gateware))
 deps = \
 	main.py \
 	gateware/punch/flat.py \
+	gateware/punch/send.py \
 	platforms/sipeed_tang_nano_1k.py
 
 all: $(gateware)

@@ -7,6 +7,8 @@ from litex.soc.interconnect import stream
 
 from migen.genlib.misc import WaitTimer
 
+from .send import Send
+
 
 class Punch(LiteXModule):
     def __init__(self, pads_reset, pads, depth=128):
@@ -18,11 +20,12 @@ class Punch(LiteXModule):
         start = Signal()
         reset = Signal(reset=1)
         wait = Signal()
+        last = Signal()
 
         sel = Signal(max=len(pads))
 
-        send = stream.Endpoint([("data", 8)])
-        send_done = Signal()
+        self.submodules.send = send = Send()
+        self.comb += send.source.connect(self.source)
 
         timer = WaitTimer(depth)
         self.submodules += timer
@@ -44,48 +47,18 @@ class Punch(LiteXModule):
             If(timer.wait & timer.done,
                 wait.eq(0),
                 NextValue(sel, 0),
-                NextValue(send_done, 0),
+                NextValue(last, 0),
                 NextState("SEND")
             )
         )
         fsm.act("SEND",
-            send.ready.eq(1),
-            If(send.valid,
-                NextValue(self.source.data,
-                    Mux(send.data, ord('1'), ord('_'))
-                ),
-                NextState("SEND-WAIT")
-            ).Else(
-                NextValue(self.source.data, ord('\r')),
-                NextState("CR")
-            )
-        )
-        fsm.act("SEND-WAIT",
-            self.source.valid.eq(1),
-            If(self.source.ready,
-                NextState("SEND")
-            )
-        )
-        fsm.act("CR",
-            self.source.valid.eq(1),
-            If(self.source.ready,
-                self.source.valid.eq(1),
-                NextValue(self.source.data, ord('\n')),
-                NextState("LF")
-            )
-        )
-        fsm.act("LF",
-            self.source.valid.eq(1),
-            If(self.source.ready,
+            send.en.eq(1),
+            If(send.done,
                 NextValue(sel, sel + 1),
-                If(send_done,
+                If(last,
                     NextState("IDLE")
                 ).Elif((sel + 1) == len(pads),
-                    NextValue(send_done, 1),
-                    NextValue(self.source.data, ord('\r')),
-                    NextState("CR")
-                ).Else(
-                    NextState("SEND")
+                    NextValue(last, 1),
                 )
             )
         )
@@ -104,7 +77,7 @@ class Punch(LiteXModule):
             self.comb += fifo.sink.data.eq(pads_buf[s])
 
             cases[s] = [
-                fifo.source.connect(send),
+                fifo.source.connect(send.sink),
             ]
 
         self.comb += Case(sel, cases)
